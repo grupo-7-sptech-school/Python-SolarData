@@ -5,10 +5,11 @@ import time
 def insercao():
     """Teste rápido de conexão e inserção"""
     config = {
-        'user': "aluno",
-        'password': "sptech",
-        'host': 'localhost', 
-        'database': "solarData01"
+        'user': "solardata",
+        'password': "Solar@Data01",
+        'host': '34.198.76.254' , 
+        'database': "solarData01",
+        'port': 3306
     }
 
     try:
