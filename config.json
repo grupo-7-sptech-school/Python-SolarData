@@ -1,0 +1,21 @@
+{
+    "empresa": "SolarData",
+    "maquina": "Server-SP01",
+
+    "componentes": {
+        "1": "CPU",
+        "2": "RAM",
+        "3": "DISCO"
+    },
+
+    "slack_channel": "#social",
+    "token": "Tem-não",
+
+    "db": {
+        "host": "34.198.76.254",
+        "user": "solardata",
+        "password": "Solar@Data01",
+        "database": "solarData01",
+        "port": 3306
+    }
+}
