@@ -86,8 +86,9 @@ def insercao():
                         top3, top3Valor,
                         procMaisLeitura, procMaisLeituraValor,
                         procMaisEscrita, procMaisEscritaValor)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     """
+
 
                     cursor.execute(query, (
                         "1",
