@@ -18,20 +18,45 @@ def insercao():
             print('Connected to MySQL server')
             
             with db.cursor() as cursor:
-                cpu_percent = p.cpu_percent(interval=1)
-                ram_percent = p.virtual_memory().percent
-                disco_percent = p.disk_usage("/").percent
 
-                print(f"Dados capturados:")
-                print(f"  CPU: {cpu_percent:.1f}%")
-                print(f"  RAM: {ram_percent:.1f}%") 
-                print(f"  DISCO: {disco_percent:.1f}%")
-
-                fk_comp1 = "1"
-                fk_comp2 = "2"
-                fk_comp3 = "3"
-                
                 while True:
+                    cpu_percent = p.cpu_percent(interval=1)
+                    ram_percent = p.virtual_memory().percent
+                    disco_percent = p.disk_usage("/").percent
+
+                    
+                    print(f"Dados capturados:")
+                    print(f"  CPU: {cpu_percent:.1f}%")
+                    print(f"  RAM: {ram_percent:.1f}%") 
+                    print(f"  DISCO: {disco_percent:.1f}%")
+
+                    fk_comp1 = "1"
+                    fk_comp2 = "2"
+                    fk_comp3 = "3"
+                
+
+                    ##---------- Dados de Consumo ----------##
+
+                    if cpu_percent > 90:
+                        potencia = random.uniform(750,1000)
+                    elif cpu_percent >= 20:
+                        potencia = random.uniform(150,700)
+                    else: 
+                        potencia = random.uniform(30,150)
+
+                    queryConsumo = """
+                                INSERT INTO ConsumoEnergia (data, fkMaquina, potencia, intervalo_medicao)
+                                VALUES (NOW(), %s, %s, %s)
+                            """
+                    
+                    cursor.execute(queryConsumo, (1598329989, potencia, 1))
+                    db.commit()
+                    
+                    print(f"Consumo Energia inserindo: {potencia:.2f} W")
+
+
+                    ##-------------- Coleta de Disco ---------------##
+
                     io_before_total = p.disk_io_counters(perdisk=False)
                     time.sleep(1)
                     io_after_total = p.disk_io_counters(perdisk=False)
