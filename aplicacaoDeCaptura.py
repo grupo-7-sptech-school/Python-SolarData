@@ -1,62 +1,110 @@
 import psutil as p
 from mysql.connector import connect, Error
 import time
+import socket
 import random
+import hashlib
 
-def obter_ultimas_fk_componentes(config):
+hostname = socket.gethostname()
+
+# 2) gerar hash numérico (mesmo algoritmo do banco)
+hostnameHash = int(hashlib.sha256(hostname.encode()).hexdigest(), 16) % (10**10)
+
+
+def obter_ultimas_fk_componentes(config, fk_maquina):
     try:
         db = connect(**config)
         if db.is_connected():
             with db.cursor() as cursor:
-                query = "SELECT fkComponente FROM Componente ORDER BY fkComponente DESC LIMIT 3"
-                cursor.execute(query)
+                
+                query = """
+                    SELECT idComponente 
+                    FROM Componente 
+                    WHERE fkMaquina = %s
+                    ORDER BY idComponente ASC
+                    LIMIT 3
+                """
+
+                cursor.execute(query, (fk_maquina,))
                 resultados = cursor.fetchall()
-                
-                if not resultados:
-                    return 1, 2, 3
-                
-                fk_componentes = [resultado[0] for resultado in resultados]
-                
-                while len(fk_componentes) < 3:
-                    fk_componentes.append(fk_componentes[-1] + 1)
-                
-                fk_comp1 = 7
-                fk_comp2 = 8
-                fk_comp3 = 9
-                
+
+                if len(resultados) < 3:
+                    print("⚠️ Sua máquina não tem 3 componentes cadastrados.")
+                    return None, None, None
+
+                fk_comp1 = resultados[0][0]
+                fk_comp2 = resultados[1][0]
+                fk_comp3 = resultados[2][0]
+
                 return fk_comp1, fk_comp2, fk_comp3
-                
+
     except Error as e:
         print('Erro ao buscar fkComponente -', e)
-        return 7, 8, 9
+        return None, None, None
     finally:
         if 'db' in locals() and db.is_connected():
             db.close()
 
+
 def insercao():
     config = {
-        'user': "solardata",
-        'password': "Solar@Data01",
-        'host': '34.198.76.254',
+        'user': "root",
+        'password': "Pipoca12200#",
+        'host': "localhost",
         'database': "solarData01",
         'port': 3306
     }
 
-    fk_comp1, fk_comp2, fk_comp3 = obter_ultimas_fk_componentes(config)
-    
-    print(f"FK Componentes atribuídos: {fk_comp1}, {fk_comp2}, {fk_comp3}")
+
+    def obter_fk_maquina(config):
+
+        try:
+            db = connect(**config)
+            with db.cursor() as cursor:
+                cursor.execute("SELECT hostName FROM maquina WHERE hostName = %s", (hostnameHash,))
+                result = cursor.fetchone()
+
+
+                if result:
+                     return hostnameHash
+
+                else:
+                    print(f"Máquina com host: '{hostnameHash}' não cadastrada!")
+                return None
+
+        except Error as e:
+            print("Erro ao buscar fkMaquina:", e)
+            return None
+        finally:
+            if 'db' in locals() and db.is_connected():
+                db.close()
+
 
     try:
         db = connect(**config)
         if db.is_connected():
             print('Connected to MySQL server')
             
+            fk_maquina = obter_fk_maquina(config)
+            
+            fk_comp1, fk_comp2, fk_comp3 = obter_ultimas_fk_componentes(config, fk_maquina)
+
+            
+            print(f"FK Componentes atribuídos: {fk_comp1}, {fk_comp2}, {fk_comp3}")
+
+            if not fk_comp1 or not fk_comp2 or not fk_comp3:
+                print("Essa máquina não tem componentes suficientes cadastrados.")
+                return
+
+            
+            print("inserindo no hostname:" + socket.gethostname())
             with db.cursor() as cursor:
 
                 while True:
                     cpu_percent = p.cpu_percent(interval=1)
                     ram_percent = p.virtual_memory().percent
                     disco_percent = p.disk_usage("/").percent
+
 
                     
                     print(f"Dados capturados:")
@@ -76,7 +124,7 @@ def insercao():
                                 VALUES (NOW(), %s, %s, %s)
                             """
                     
-                    cursor.execute(queryConsumo, (1598329989, potencia, 1))
+                    cursor.execute(queryConsumo, (hostnameHash, potencia, 1))
                     db.commit()
                     
                     print(f"Consumo Energia inserindo: {potencia:.2f} W")
@@ -127,30 +175,30 @@ def insercao():
                     cursor.execute(queryRegistro, (disco_percent, fk_comp3))
                     db.commit()
 
-                    # query = """
-                    #     INSERT INTO registroDisco
-                    #     (fkMaquina, taxaLeitura, taxaEscrita,
-                    #     top1, top1Valor,
-                    #     top2, top2Valor,
-                    #     top3, top3Valor,
-                    #     procMaisLeitura, procMaisLeituraValor,
-                    #     procMaisEscrita, procMaisEscritaValor)
-                    #     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    # """
+                    query = """
+                        INSERT INTO RegistroDisco
+                        (fkMaquina, taxaLeitura, taxaEscrita,
+                        top1, top1Valor,
+                        top2, top2Valor,
+                        top3, top3Valor,
+                        procMaisLeitura, procMaisLeituraValor,
+                        procMaisEscrita, procMaisEscritaValor)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    """
 
 
-                    # cursor.execute(query, (
-                    #     "1",
-                    #     taxaLeitura, taxaEscrita,
-                    #     top1[0], top1[1],
-                    #     top2[0], top2[1],
-                    #     top3[0], top3[1],
-                    #     procMaisLeitura, procMaisLeituraValor,
-                    #     procMaisEscrita, procMaisEscritaValor
-                    # ))
-                    # db.commit()
+                    cursor.execute(query, (
+                        hostnameHash,
+                        taxaLeitura, taxaEscrita,
+                        top1[0], top1[1],
+                        top2[0], top2[1],
+                        top3[0], top3[1],
+                        procMaisLeitura, procMaisLeituraValor,
+                        procMaisEscrita, procMaisEscritaValor
+                    ))
+                    db.commit()
 
-                    print("registroDisco inserido")
+                    print("RegistroDisco inserido")
 
             cursor.close()
             db.close()
