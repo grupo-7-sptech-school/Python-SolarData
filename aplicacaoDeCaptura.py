@@ -29,7 +29,7 @@ def obter_ultimas_fk_componentes(config, fk_maquina):
                 resultados = cursor.fetchall()
 
                 if len(resultados) < 3:
-                    print("⚠️ Sua máquina não tem 3 componentes cadastrados.")
+                    print("Sua máquina não tem os componentes cadastrados.")
                     return None, None, None
 
                 fk_comp1 = resultados[0][0]
