@@ -1,15 +1,13 @@
 import psutil as p
 from mysql.connector import connect, Error
 import time
-import socket
+# import socket
 import random
-import hashlib
+# import hashlib
 
-hostname = socket.gethostname()
-
-# 2) gerar hash numérico (mesmo algoritmo do banco)
-hostnameHash = int(hashlib.sha256(hostname.encode()).hexdigest(), 16) % (10**10)
-
+# hostname = socket.gethostname()
+# hostnameHash = int(hashlib.sha256(hostname.encode()).hexdigest(), 16) % (10**10)
+fk_maquina = 1598329989
 
 def obter_ultimas_fk_componentes(config, fk_maquina):
     try:
@@ -56,28 +54,28 @@ def insercao():
     }
 
 
-    def obter_fk_maquina(config):
+    # def obter_fk_maquina(config):
 
-        try:
-            db = connect(**config)
-            with db.cursor() as cursor:
-                cursor.execute("SELECT hostName FROM maquina WHERE hostName = %s", (hostnameHash,))
-                result = cursor.fetchone()
+    #     try:
+    #         db = connect(**config)
+    #         with db.cursor() as cursor:
+    #             cursor.execute("SELECT hostName FROM maquina WHERE hostName = %s", (fk_maquina))
+    #             result = cursor.fetchone()
 
 
-                if result:
-                     return hostnameHash
+    #             if result:
+    #                  return fk_maquina
 
-                else:
-                    print(f"Máquina com host: '{hostnameHash}' não cadastrada!")
-                return None
+    #             else:
+    #                 print(f"Máquina com host: '{fk_maquina}' não cadastrada!")
+    #             return None
 
-        except Error as e:
-            print("Erro ao buscar fkMaquina:", e)
-            return None
-        finally:
-            if 'db' in locals() and db.is_connected():
-                db.close()
+    #     except Error as e:
+    #         print("Erro ao buscar fkMaquina:", e)
+    #         return None
+    #     finally:
+    #         if 'db' in locals() and db.is_connected():
+    #             db.close()
 
 
     try:
@@ -85,7 +83,7 @@ def insercao():
         if db.is_connected():
             print('Connected to MySQL server')
             
-            fk_maquina = obter_fk_maquina(config)
+            # fk_maquina = obter_fk_maquina(config)
             
             fk_comp1, fk_comp2, fk_comp3 = obter_ultimas_fk_componentes(config, fk_maquina)
 
@@ -97,7 +95,7 @@ def insercao():
                 return
 
             
-            print("inserindo no hostname:" + socket.gethostname())
+            # print("inserindo no hostname:" + socket.gethostname())
             with db.cursor() as cursor:
 
                 while True:
@@ -124,7 +122,7 @@ def insercao():
                                 VALUES (NOW(), %s, %s, %s)
                             """
                     
-                    cursor.execute(queryConsumo, (hostnameHash, potencia, 1))
+                    cursor.execute(queryConsumo, (fk_maquina, potencia, 1))
                     db.commit()
                     
                     print(f"Consumo Energia inserindo: {potencia:.2f} W")
@@ -188,7 +186,7 @@ def insercao():
 
 
                     cursor.execute(query, (
-                        hostnameHash,
+                        fk_maquina,
                         taxaLeitura, taxaEscrita,
                         top1[0], top1[1],
                         top2[0], top2[1],
