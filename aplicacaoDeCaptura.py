@@ -3,8 +3,37 @@ from mysql.connector import connect, Error
 import time
 import random
 
+def obter_ultimas_fk_componentes(config):
+    try:
+        db = connect(**config)
+        if db.is_connected():
+            with db.cursor() as cursor:
+                query = "SELECT fkComponente FROM Componente ORDER BY fkComponente DESC LIMIT 3"
+                cursor.execute(query)
+                resultados = cursor.fetchall()
+                
+                if not resultados:
+                    return 1, 2, 3
+                
+                fk_componentes = [resultado[0] for resultado in resultados]
+                
+                while len(fk_componentes) < 3:
+                    fk_componentes.append(fk_componentes[-1] + 1)
+                
+                fk_comp1 = fk_componentes[0] + 1
+                fk_comp2 = fk_componentes[1] + 1
+                fk_comp3 = fk_componentes[2] + 1
+                
+                return fk_comp1, fk_comp2, fk_comp3
+                
+    except Error as e:
+        print('Erro ao buscar fkComponente -', e)
+        return 1, 2, 3
+    finally:
+        if 'db' in locals() and db.is_connected():
+            db.close()
+
 def insercao():
-    """Teste rápido de conexão e inserção"""
     config = {
         'user': "solardata",
         'password': "Solar@Data01",
@@ -12,6 +41,10 @@ def insercao():
         'database': "solarData01",
         'port': 3306
     }
+
+    fk_comp1, fk_comp2, fk_comp3 = obter_ultimas_fk_componentes(config)
+    
+    print(f"FK Componentes atribuídos: {fk_comp1}, {fk_comp2}, {fk_comp3}")
 
     try:
         db = connect(**config)
@@ -31,13 +64,6 @@ def insercao():
                     print(f"  RAM: {ram_percent:.1f}%") 
                     print(f"  DISCO: {disco_percent:.1f}%")
 
-                    fk_comp1 = 1
-                    fk_comp2 = 2
-                    fk_comp3 = 3
-                
-
-                    ##---------- Dados de Consumo ----------##
-
                     if cpu_percent > 90:
                         potencia = random.uniform(750,1000)
                     elif cpu_percent >= 20:
@@ -54,9 +80,6 @@ def insercao():
                     db.commit()
                     
                     print(f"Consumo Energia inserindo: {potencia:.2f} W")
-
-
-                    ##-------------- Coleta de Disco ---------------##
 
                     io_before_total = p.disk_io_counters(perdisk=False)
                     time.sleep(1)
@@ -104,30 +127,30 @@ def insercao():
                     cursor.execute(queryRegistro, (disco_percent, fk_comp3))
                     db.commit()
 
-                    # query = """
-                    #     INSERT INTO registroDisco
-                    #     (fkMaquina, taxaLeitura, taxaEscrita,
-                    #     top1, top1Valor,
-                    #     top2, top2Valor,
-                    #     top3, top3Valor,
-                    #     procMaisLeitura, procMaisLeituraValor,
-                    #     procMaisEscrita, procMaisEscritaValor)
-                    #     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    # """
+                    query = """
+                        INSERT INTO registroDisco
+                        (fkMaquina, taxaLeitura, taxaEscrita,
+                        top1, top1Valor,
+                        top2, top2Valor,
+                        top3, top3Valor,
+                        procMaisLeitura, procMaisLeituraValor,
+                        procMaisEscrita, procMaisEscritaValor)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    """
 
 
-                    # cursor.execute(query, (
-                    #     "1",
-                    #     taxaLeitura, taxaEscrita,
-                    #     top1[0], top1[1],
-                    #     top2[0], top2[1],
-                    #     top3[0], top3[1],
-                    #     procMaisLeitura, procMaisLeituraValor,
-                    #     procMaisEscrita, procMaisEscritaValor
-                    # ))
-                    # db.commit()
+                    cursor.execute(query, (
+                        "1",
+                        taxaLeitura, taxaEscrita,
+                        top1[0], top1[1],
+                        top2[0], top2[1],
+                        top3[0], top3[1],
+                        procMaisLeitura, procMaisLeituraValor,
+                        procMaisEscrita, procMaisEscritaValor
+                    ))
+                    db.commit()
 
-                    # print("registroDisco inserido")
+                    print("registroDisco inserido")
 
             cursor.close()
             db.close()
