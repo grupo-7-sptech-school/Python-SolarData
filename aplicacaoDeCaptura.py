@@ -20,15 +20,15 @@ def obter_ultimas_fk_componentes(config):
                 while len(fk_componentes) < 3:
                     fk_componentes.append(fk_componentes[-1] + 1)
                 
-                fk_comp1 = fk_componentes[0] + 1
-                fk_comp2 = fk_componentes[1] + 1
-                fk_comp3 = fk_componentes[2] + 1
+                fk_comp1 = 7
+                fk_comp2 = 8
+                fk_comp3 = 9
                 
                 return fk_comp1, fk_comp2, fk_comp3
                 
     except Error as e:
         print('Erro ao buscar fkComponente -', e)
-        return 1, 2, 3
+        return 7, 8, 9
     finally:
         if 'db' in locals() and db.is_connected():
             db.close()
@@ -127,28 +127,28 @@ def insercao():
                     cursor.execute(queryRegistro, (disco_percent, fk_comp3))
                     db.commit()
 
-                    query = """
-                        INSERT INTO registroDisco
-                        (fkMaquina, taxaLeitura, taxaEscrita,
-                        top1, top1Valor,
-                        top2, top2Valor,
-                        top3, top3Valor,
-                        procMaisLeitura, procMaisLeituraValor,
-                        procMaisEscrita, procMaisEscritaValor)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    """
+                    # query = """
+                    #     INSERT INTO registroDisco
+                    #     (fkMaquina, taxaLeitura, taxaEscrita,
+                    #     top1, top1Valor,
+                    #     top2, top2Valor,
+                    #     top3, top3Valor,
+                    #     procMaisLeitura, procMaisLeituraValor,
+                    #     procMaisEscrita, procMaisEscritaValor)
+                    #     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    # """
 
 
-                    cursor.execute(query, (
-                        "1",
-                        taxaLeitura, taxaEscrita,
-                        top1[0], top1[1],
-                        top2[0], top2[1],
-                        top3[0], top3[1],
-                        procMaisLeitura, procMaisLeituraValor,
-                        procMaisEscrita, procMaisEscritaValor
-                    ))
-                    db.commit()
+                    # cursor.execute(query, (
+                    #     "1",
+                    #     taxaLeitura, taxaEscrita,
+                    #     top1[0], top1[1],
+                    #     top2[0], top2[1],
+                    #     top3[0], top3[1],
+                    #     procMaisLeitura, procMaisLeituraValor,
+                    #     procMaisEscrita, procMaisEscritaValor
+                    # ))
+                    # db.commit()
 
                     print("registroDisco inserido")
 
